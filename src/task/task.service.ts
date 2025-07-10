@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateTaskDto } from './dto/update.task.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 const enum TaskStatus {
     PENDING = 'PENDING',
@@ -15,13 +16,15 @@ export class TaskService {
         private prisma: PrismaService
     ) {}
 
-    async createTask(userId: number, title: string, description: string) {
+    async createTask(userId: number, createTaskDto: UpdateTaskDto) {
         return this.prisma.task.create({
             data: {
-                title,
-                description,
-                status: TaskStatus.PENDING,
                 userId,
+                title: createTaskDto.title,
+                description: createTaskDto.description,
+                status: createTaskDto.status || TaskStatus.PENDING,
+                startDate: createTaskDto.startDate,
+                endDate: createTaskDto.dueDate,   
             },
         });
     }
@@ -71,7 +74,7 @@ export class TaskService {
             where: { userId },
         });
     }
-    async getTaskByStatus(userId: number, status: TaskStatus) {
+    async getTaskByStatus(userId: number, status: string) {
         return this.prisma.task.findMany({
             where: {
                 userId,

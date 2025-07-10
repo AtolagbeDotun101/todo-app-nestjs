@@ -8,8 +8,16 @@ export class UserService {
     constructor(private prisma: PrismaService) {}
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
-  }
+  return this.prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      password: true, // Needed for validation
+    },
+  });
+}
 
   async create(createUserDto: CreateUserDto) {
     const { email, password , username} = createUserDto;
